@@ -33,6 +33,8 @@ RUN apt-get update \
     libtbb-dev \
     libeigen3-dev \
     libwebp-dev \
+    libgflags-dev \
+    libgoogle-glog-dev \
     curl \
     ros-foxy-rosbridge-suite \
     build-essential \ 
@@ -76,7 +78,7 @@ RUN unzip OpenCV320.zip && \
     mkdir build && \
     cd build && \
     cmake -DOPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules -DOPENCV_ENABLE_NONFREE=ON -DENABLE_PRECOMPILED_HEADERS=OFF -DBUILD_opencv_xfeatures2d=ON -DBUILD_opencv_python3=OFF .. && \
-    make -j$(nproc) && \
+    make -j4 && \
     make install && \
     ldconfig
  
