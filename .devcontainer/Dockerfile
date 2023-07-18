@@ -45,7 +45,6 @@ RUN apt-get update \
     python3-tk \
     python3-numpy\
     python3-rospkg\
-    python-is-python3\
     ant \
     default-jdk \
     doxygen \
@@ -84,6 +83,6 @@ RUN unzip OpenCV320.zip && \
     make install && \
     ldconfig
 
-RUN rosdep init && rosdep update
+RUN rm -rf /etc/ros/rosdep/sources.list.d/20-default.list && rosdep init && rosdep update
  
 RUN echo "if [ -f ${WORKSPACE}/install/setup.bash ]; then source ${WORKSPACE}/install/setup.bash; fi" >> /home/ros/.bashrc
