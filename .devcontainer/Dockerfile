@@ -65,7 +65,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt install -y ros-noetic-desktop-full
 # Install OpenCV 3.2.0
 RUN wget https://github.com/opencv/opencv/archive/3.2.0.zip -O OpenCV320.zip
 
-RUN git clone -b 3.4.0 https://github.com/opencv/opencv_contrib.git
+RUN git clone -b 3.2.0 https://github.com/opencv/opencv_contrib.git
 
 RUN unzip OpenCV320.zip && \
     # add definitions for ffmpeg
