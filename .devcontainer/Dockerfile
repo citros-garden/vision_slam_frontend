@@ -1,48 +1,85 @@
 FROM althack/ros2:foxy-dev 
 
-# ** [Optional] Uncomment this section to install additional packages. **
-#
-# ENV DEBIAN_FRONTEND=noninteractive
-# RUN apt-get update \
-#    && apt-get -y install --no-install-recommends <your-package-list-here> \
-#    #
-#    # Clean up
-#    && apt-get autoremove -y \
-#    && apt-get clean -y \
-#    && rm -rf /var/lib/apt/lists/*
-# ENV DEBIAN_FRONTEND=dialog
+RUN apt update && apt upgrade
+
+# Installing dependencies
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+    && apt-get -y install --no-install-recommends cmake \
+    gcc \
+    g++ \
+    python3-dev \
+    python3-numpy \
+    libavcodec-dev \
+    libavformat-dev \
+    libswscale-dev \
+    libgstreamer-plugins-base1.0-dev \
+    libgstreamer1.0-dev \
+    libgtk-3-dev \
+    libvtk6-dev \ 
+    qt5-default \
+    zlib1g-dev \
+    libjpeg-dev \
+    libwebp-dev \
+    libpng-dev \
+    libtiff5-dev \
+    libopenexr-dev \
+    libgdal-dev \
+    libpng-dev \
+    libjpeg-dev \
+    libopenexr-dev \
+    libtiff-dev \
+    libdc1394-22-dev \ 
+    libtbb-dev \
+    libeigen3-dev \
+    libwebp-dev \
+    libgflags-dev \
+    libgoogle-glog-dev \
+    curl \
+    ros-foxy-rosbridge-suite \
+    build-essential \ 
+    python-dev \
+    python-tk \
+    python-numpy\
+    python3-dev\
+    python3-tk \
+    python3-numpy\
+    ant \
+    default-jdk \
+    doxygen \
+    unzip \
+    wget \
+   # Clean up
+    && apt-get autoremove -y \
+    && apt-get clean -y \
+    && rm -rf /var/lib/apt/lists/*
+ENV DEBIAN_FRONTEND=dialog
 
 # Set up auto-source of workspace for ros user
 ARG WORKSPACE
-RUN apt update && apt upgrade
 
-RUN sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
-RUN sudo apt install curl
-RUN curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
+# Install ROS1
+RUN echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list
+RUN curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -
+RUN apt update
+RUN DEBIAN_FRONTEND=noninteractive apt install -y ros-noetic-desktop-full
 
-RUN apt update && apt upgrade -y
-RUN sudo DEBIAN_FRONTEND=noninteractive apt install ros-noetic-desktop-full -y
+# Install OpenCV 3.2.0
+RUN wget https://github.com/opencv/opencv/archive/3.2.0.zip -O OpenCV320.zip
 
-RUN sudo apt-get install cmake
-RUN sudo apt-get install gcc g++
+RUN git clone -b 3.2.0 https://github.com/opencv/opencv_contrib.git
 
-RUN sudo apt-get install python3-dev python3-numpy
-
-RUN sudo apt-get install libavcodec-dev libavformat-dev libswscale-dev libgstreamer-plugins-base1.0-dev libgstreamer1.0-dev -y
-
-RUN sudo apt-get install libgtk-3-dev -y
-
-RUN sudo apt-get install -y  libpng-dev \
-                         libjpeg-dev \
-                         libopenexr-dev \
-                         libtiff-dev \
-                         libwebp-dev 
-
-RUN cd ~/ &&\
-    git clone https://github.com/Itseez/opencv.git &&\
-    git clone https://github.com/Itseez/opencv_contrib.git &&\
-    cd opencv && mkdir build && cd build && cmake  -DWITH_QT=ON -DWITH_OPENGL=ON -DFORCE_VTK=ON -DWITH_TBB=ON -DWITH_GDAL=ON -DWITH_XINE=ON -DBUILD_EXAMPLES=ON .. && \
-    make -j4 && make install && ldconfig
-
-RUN apt update && apt-get install -y ros-foxy-rosbridge-suite 
+RUN unzip OpenCV320.zip && \
+    # add definitions for ffmpeg
+    echo "#define AV_CODEC_FLAG_GLOBAL_HEADER (1 << 22)" | cat - /opencv-3.2.0/modules/videoio/src/cap_ffmpeg_impl.hpp > temp && mv temp /opencv-3.2.0/modules/videoio/src/cap_ffmpeg_impl.hpp && \
+    echo "#define CODEC_FLAG_GLOBAL_HEADER AV_CODEC_FLAG_GLOBAL_HEADER" | cat - /opencv-3.2.0/modules/videoio/src/cap_ffmpeg_impl.hpp > temp && mv temp /opencv-3.2.0/modules/videoio/src/cap_ffmpeg_impl.hpp && \ 
+    echo "#define AVFMT_RAWPICTURE 0x0020" | cat - /opencv-3.2.0/modules/videoio/src/cap_ffmpeg_impl.hpp > temp && mv temp /opencv-3.2.0/modules/videoio/src/cap_ffmpeg_impl.hpp && \
+    cd opencv-3.2.0 && \
+    mkdir build && \
+    cd build && \
+    cmake -DOPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules -DOPENCV_ENABLE_NONFREE=ON -DENABLE_PRECOMPILED_HEADERS=OFF -DBUILD_opencv_xfeatures2d=ON -DBUILD_opencv_python3=OFF .. && \
+    make -j4 && \
+    make install && \
+    ldconfig
+ 
 RUN echo "if [ -f ${WORKSPACE}/install/setup.bash ]; then source ${WORKSPACE}/install/setup.bash; fi" >> /home/ros/.bashrc
