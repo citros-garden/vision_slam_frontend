@@ -65,13 +65,13 @@ RUN DEBIAN_FRONTEND=noninteractive apt install -y ros-noetic-desktop-full
 # Install OpenCV 3.2.0
 RUN wget https://github.com/opencv/opencv/archive/3.2.0.zip -O OpenCV320.zip
 
-RUN git clone https://github.com/opencv/opencv_contrib.git
+RUN git clone -b 3.4.0 https://github.com/opencv/opencv_contrib.git
 
 RUN unzip OpenCV320.zip && \
     # add definitions for ffmpeg
-    sed -i '#define AV_CODEC_FLAG_GLOBAL_HEADER (1 << 22)' /opencv-3.2.0/modules/videoio/src/cap_ffmpeg_impl.hpp && \
-    sed -i '#define CODEC_FLAG_GLOBAL_HEADER AV_CODEC_FLAG_GLOBAL_HEADER' /opencv-3.2.0/modules/videoio/src/cap_ffmpeg_impl.hpp && \ 
-    sed -i '#define AVFMT_RAWPICTURE 0x0020' /opencv-3.2.0/modules/videoio/src/cap_ffmpeg_impl.hpp && \
+    echo "#define AV_CODEC_FLAG_GLOBAL_HEADER (1 << 22)" | cat - /opencv-3.2.0/modules/videoio/src/cap_ffmpeg_impl.hpp > temp && mv temp /opencv-3.2.0/modules/videoio/src/cap_ffmpeg_impl.hpp && \
+    echo "#define CODEC_FLAG_GLOBAL_HEADER AV_CODEC_FLAG_GLOBAL_HEADER" | cat - /opencv-3.2.0/modules/videoio/src/cap_ffmpeg_impl.hpp > temp && mv temp /opencv-3.2.0/modules/videoio/src/cap_ffmpeg_impl.hpp && \ 
+    echo "#define AVFMT_RAWPICTURE 0x0020" | cat - /opencv-3.2.0/modules/videoio/src/cap_ffmpeg_impl.hpp > temp && mv temp /opencv-3.2.0/modules/videoio/src/cap_ffmpeg_impl.hpp && \
     cd opencv-3.2.0 && \
     mkdir build && \
     cd build && \
