@@ -82,7 +82,5 @@ RUN unzip OpenCV320.zip && \
     make -j$(nproc) && \
     make install && \
     ldconfig
-
-RUN rm -rf /etc/ros/rosdep/sources.list.d/20-default.list && rosdep init && rosdep update
  
 RUN echo "if [ -f ${WORKSPACE}/install/setup.bash ]; then source ${WORKSPACE}/install/setup.bash; fi" >> /home/ros/.bashrc
