@@ -44,6 +44,8 @@ RUN apt-get update \
     python3-dev\
     python3-tk \
     python3-numpy\
+    python3-rospkg\
+    python-is-python3\
     ant \
     default-jdk \
     doxygen \
@@ -78,8 +80,10 @@ RUN unzip OpenCV320.zip && \
     mkdir build && \
     cd build && \
     cmake -DOPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules -DOPENCV_ENABLE_NONFREE=ON -DENABLE_PRECOMPILED_HEADERS=OFF -DBUILD_opencv_xfeatures2d=ON -DBUILD_opencv_python3=OFF .. && \
-    make -j4 && \
+    make -j$(nproc) && \
     make install && \
     ldconfig
+
+RUN rosdep init && rosdep update
  
 RUN echo "if [ -f ${WORKSPACE}/install/setup.bash ]; then source ${WORKSPACE}/install/setup.bash; fi" >> /home/ros/.bashrc
